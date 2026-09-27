@@ -1,0 +1,5 @@
+python-deprecated source: file-without-copyright-information
+python-deprecated source: no-debian-changes
+python-deprecated source: source-contains-prebuilt-windows-binary
+python-deprecated source: source-is-missing
+python-deprecated source: source-package-encodes-python-version

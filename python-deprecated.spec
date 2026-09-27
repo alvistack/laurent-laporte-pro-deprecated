@@ -1,51 +1,102 @@
-%global srcname Deprecated
-%global pkgname deprecated
+# Copyright 2026 Wong Hoi Sing Edison <hswong3i@pantarei-design.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-Name:           python-%{pkgname}
-Version:        3.0.0
-Release:        1%{?dist}
-Summary:        Python decorator to deprecate old python classes, functions or methods
-License:        MIT
-URL:            https://github.com/laurent-laporte-pro/%{pkgname}
-Source0:        %{pypi_source %{pkgname}}
-BuildArch:      noarch
+%global debug_package %{nil}
+
+%global source_date_epoch_from_changelog 0
+
+Name: python-deprecated
+Epoch: 100
+Version: 3.0.0
+Release: 1%{?dist}
+BuildArch: noarch
+Summary: Python decorator for old classes, functions or methods
+License: MIT
+URL: https://github.com/laurent-laporte-pro/deprecated/tags
+Source0: %{name}_%{version}.orig.tar.gz
+BuildRequires: fdupes
+BuildRequires: python-rpm-macros
+BuildRequires: python3-devel
+BuildRequires: python3-pip
 
 %description
-Python @deprecated decorator to deprecate old python classes,
-functions or methods.
-
-%package -n python3-%{pkgname}
-Summary:        %{summary}
-BuildRequires:  python3-devel
-
-%description -n python3-%{pkgname}
-Python @deprecated decorator to deprecate old python classes,
-functions or methods.
+The deprecated module provides the @deprecated decorator to deprecate
+old Python classes, functions or methods.
 
 %prep
-%autosetup -n %{pkgname}-%{version}
-
-%generate_buildrequires
-%pyproject_buildrequires
+%autosetup -T -c -n %{name}_%{version}-%{release}
+tar -zx -f %{S:0} --strip-components=1 -C .
 
 %build
-%pyproject_wheel
+pip wheel \
+    --no-deps \
+    --no-build-isolation \
+    --wheel-dir=dist \
+    .
 
 %install
-%pyproject_install
-%pyproject_save_files %{pkgname}
+pip install \
+    --no-deps \
+    --ignore-installed \
+    --root=%{buildroot} \
+    --prefix=%{_prefix} \
+    dist/*.whl
+find %{buildroot}%{python3_sitelib} -type f -name '*.pyc' -exec rm -rf {} \;
+fdupes -qnrps %{buildroot}%{python3_sitelib}
 
 %check
-%pyproject_check_import
 
-%files -n python3-%{pkgname} -f %{pyproject_files}
+%if 0%{?suse_version} >= 1500
+%package -n python%{python3_version_nodots}-deprecated
+Summary: Python decorator for old classes, functions or methods
+Requires: python3
+Requires: python3-wrapt >= 1.16
+Provides: python3-deprecated = %{epoch}:%{version}-%{release}
+Provides: python3dist(deprecated) = %{epoch}:%{version}-%{release}
+Provides: python%{python3_version}-deprecated = %{epoch}:%{version}-%{release}
+Provides: python%{python3_version}dist(deprecated) = %{epoch}:%{version}-%{release}
+Provides: python%{python3_version_nodots}-deprecated = %{epoch}:%{version}-%{release}
+Provides: python%{python3_version_nodots}dist(deprecated) = %{epoch}:%{version}-%{release}
+
+%description -n python%{python3_version_nodots}-deprecated
+The deprecated module provides the @deprecated decorator to deprecate
+old Python classes, functions or methods.
+
+%files -n python%{python3_version_nodots}-deprecated
 %license LICENSE.md
-%doc README.md
+%{python3_sitelib}/*
+%endif
 
+%if !(0%{?suse_version} >= 1500)
+%package -n python3-deprecated
+Summary: Python decorator for old classes, functions or methods
+Requires: python3
+Requires: python3-wrapt >= 1.16
+Provides: python3-deprecated = %{epoch}:%{version}-%{release}
+Provides: python3dist(deprecated) = %{epoch}:%{version}-%{release}
+Provides: python%{python3_version}-deprecated = %{epoch}:%{version}-%{release}
+Provides: python%{python3_version}dist(deprecated) = %{epoch}:%{version}-%{release}
+Provides: python%{python3_version_nodots}-deprecated = %{epoch}:%{version}-%{release}
+Provides: python%{python3_version_nodots}dist(deprecated) = %{epoch}:%{version}-%{release}
+
+%description -n python3-deprecated
+The deprecated module provides the @deprecated decorator to deprecate
+old Python classes, functions or methods.
+
+%files -n python3-deprecated
+%license LICENSE.md
+%{python3_sitelib}/*
+%endif
 
 %changelog
-* Fri Jul 26 2019 Petr Hracek <phracek@redhat.com> - 1.2.6-2
-- Fix python3_sitelib issue
-
-* Fri Jul 26 2019 Petr Hracek <phracek@redhat.com> - 1.2.6-1
-- Initial package
