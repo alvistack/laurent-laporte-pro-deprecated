@@ -1,0 +1,4 @@
+python3-deprecated: copyright-without-copyright-notice
+python3-deprecated: initial-upload-closes-no-bugs
+python3-deprecated: no-manual-page
+python3-deprecated: zero-byte-file-in-doc-directory
